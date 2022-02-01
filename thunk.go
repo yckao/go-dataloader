@@ -3,9 +3,9 @@ package dataloader
 import ("context")
 
 type Thunk[V interface{}] struct {
-    pending  chan bool
+    pending   chan bool
     value     chan V
-    err      chan error
+    err       chan error
 }
 
 func NewThunk[V interface{}]() *Thunk[V] {

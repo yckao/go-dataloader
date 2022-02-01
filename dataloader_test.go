@@ -13,12 +13,12 @@ import (
 
 
 type ErrorCache[C comparable, V interface{}] struct {
-  err error
+  err   error
   errOn string
 }
 func NewErrorCache[C comparable, V interface{}](err error, errOn string) *ErrorCache[C, V] {
   return &ErrorCache[C,V]{
-    err: err,
+    err:   err,
     errOn: errOn,
   }
 }

@@ -15,7 +15,7 @@ type DataLoader[K interface{}, V interface{}, C comparable] interface {
 
 type Result[V interface{}] struct {
     Value     V
-    Error        error
+    Error     error
 }
 
 type BatchLoadFn[K interface{}, V interface{}] func(context.Context, []K) []Result[V]
@@ -44,17 +44,17 @@ func New[K interface{}, V interface {}, C comparable](ctx context.Context, batch
 }
 
 type loader[K interface{}, V interface{}, C comparable] struct {
-    ctx                    context.Context
-    batches                chan []*batch[K, V]
+    ctx                 context.Context
+    batches             chan []*batch[K, V]
     batchLoadFn         BatchLoadFn[K, V]
     batchScheduleFn     BatchScheduleFn
-    cacheKeyFn             CacheKeyFn[K, C]
+    cacheKeyFn          CacheKeyFn[K, C]
     cacheMap            chan CacheMap[C, *Thunk[V]]
-    maxBatchSize         int
+    maxBatchSize        int
 }
 
 type batch[K interface{}, V interface{}] struct {
-    keys         []K
+    keys           []K
     thunks         []*Thunk[V]
 }
 
