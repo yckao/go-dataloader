@@ -4,7 +4,7 @@ import ("context")
 
 type Thunk[V interface{}] struct {
     pending  chan bool
-    value	 chan V
+    value     chan V
     err      chan error
 }
 

@@ -16,7 +16,7 @@ type ErrorCache[C comparable, V interface{}] struct {
   err error
   errOn string
 }
-func NewErrorCache[C comparable, V interface{}](err error, errOn string) *ErrorCache[C, V] { 
+func NewErrorCache[C comparable, V interface{}](err error, errOn string) *ErrorCache[C, V] {
   return &ErrorCache[C,V]{
     err: err,
     errOn: errOn,
@@ -55,7 +55,7 @@ var _ = Describe("DataLoader", func() {
       go func() {
         defer GinkgoRecover()
         defer wg.Done()
-  
+
         val, err := loader.Load(ctx, k).Get(ctx)
         Expect(err).To(BeNil())
         Expect(val).To(Equal(r))
@@ -94,7 +94,7 @@ var _ = Describe("DataLoader", func() {
       go func() {
         defer GinkgoRecover()
         defer wg.Done()
-  
+
         val, err := loader.Load(ctx, k).Get(ctx)
         Expect(err).To(BeNil())
         Expect(val).To(Equal(r))
@@ -133,7 +133,7 @@ var _ = Describe("DataLoader", func() {
       go func() {
         defer GinkgoRecover()
         defer wg.Done()
-  
+
         val, err := loader.Load(ctx, k).Get(ctx)
         Expect(err).To(BeNil())
         Expect(val).To(Equal(r))
@@ -256,7 +256,7 @@ var _ = Describe("DataLoader", func() {
   It("when batch load function failed", func() {
     ctx := context.TODO()
     expected := fmt.Errorf("expected error")
-  
+
     loadCount := 0
     batchLoadFn := func (ctx context.Context, keys []string) []Result[string] {
       defer GinkgoRecover()
@@ -281,7 +281,7 @@ var _ = Describe("DataLoader", func() {
       go func() {
         defer GinkgoRecover()
         defer wg.Done()
-  
+
         val, err := loader.Load(ctx, k).Get(ctx)
         Expect(err).To(Equal(expected))
         Expect(val).To(Equal(""))

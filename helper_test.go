@@ -1,9 +1,9 @@
 package dataloader
 
-import (	
+import (
     . "github.com/onsi/ginkgo/v2"
     . "github.com/onsi/gomega"
-  
+
     "context"
     "time"
 )
@@ -12,10 +12,10 @@ var _ = Describe("NewTimeWindowScheduler", func () {
     It("should run after specified duration", func () {
         scheduler := NewTimeWindowScheduler(200 * time.Millisecond)
         runned := false
-        
+
         go scheduler(context.TODO(), func() { runned = true })
         Expect(runned).To(BeFalse())
-        
+
         <- time.After(200 * time.Millisecond)
         Expect(runned).To(BeTrue())
     })
@@ -23,7 +23,7 @@ var _ = Describe("NewTimeWindowScheduler", func () {
     It("can cancel", func () {
         scheduler := NewTimeWindowScheduler(200 * time.Millisecond)
         runned := false
-        
+
         ctx, cancel := context.WithCancel(context.TODO())
         go scheduler(ctx, func() { runned = true })
         cancel()

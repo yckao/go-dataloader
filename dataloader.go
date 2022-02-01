@@ -14,23 +14,23 @@ type DataLoader[K interface{}, V interface{}, C comparable] interface {
 }
 
 type Result[V interface{}] struct {
-    Value 	V
-    Error		error
+    Value     V
+    Error        error
 }
 
 type BatchLoadFn[K interface{}, V interface{}] func(context.Context, []K) []Result[V]
-type BatchScheduleFn func(ctx context.Context, callback func()) 
+type BatchScheduleFn func(ctx context.Context, callback func())
 type CacheKeyFn[K interface{}, C comparable] func(ctx context.Context, key K) (C, error)
 
 func New[K interface{}, V interface {}, C comparable](ctx context.Context, batchLoadFn BatchLoadFn[K, V], options ...option[K, V, C]) DataLoader[K, V, C] {
     l := &loader[K, V, C]{
-        ctx: 				ctx,
-        batches:			make(chan []*batch[K, V], 1),
-        batchLoadFn: 		batchLoadFn,
-        batchScheduleFn:	NewTimeWindowScheduler(200 * time.Millisecond),
-        cacheKeyFn:			NewMirrorCacheKey[K, C](),
-        cacheMap: 			make(chan CacheMap[C, *Thunk[V]], 1),
-        maxBatchSize:		100,
+        ctx:                ctx,
+        batches:            make(chan []*batch[K, V], 1),
+        batchLoadFn:        batchLoadFn,
+        batchScheduleFn:    NewTimeWindowScheduler(200 * time.Millisecond),
+        cacheKeyFn:         NewMirrorCacheKey[K, C](),
+        cacheMap:           make(chan CacheMap[C, *Thunk[V]], 1),
+        maxBatchSize:       100,
     }
 
     l.cacheMap <- NewInMemoryCache[C, *Thunk[V]]()
@@ -44,18 +44,18 @@ func New[K interface{}, V interface {}, C comparable](ctx context.Context, batch
 }
 
 type loader[K interface{}, V interface{}, C comparable] struct {
-    ctx					context.Context
-    batches				chan []*batch[K, V]
-    batchLoadFn 		BatchLoadFn[K, V]
-    batchScheduleFn 	BatchScheduleFn
-    cacheKeyFn 			CacheKeyFn[K, C]
-    cacheMap			chan CacheMap[C, *Thunk[V]]
-    maxBatchSize 		int
+    ctx                    context.Context
+    batches                chan []*batch[K, V]
+    batchLoadFn         BatchLoadFn[K, V]
+    batchScheduleFn     BatchScheduleFn
+    cacheKeyFn             CacheKeyFn[K, C]
+    cacheMap            chan CacheMap[C, *Thunk[V]]
+    maxBatchSize         int
 }
 
 type batch[K interface{}, V interface{}] struct {
-    keys 		[]K
-    thunks 		[]*Thunk[V]
+    keys         []K
+    thunks         []*Thunk[V]
 }
 
 func (l *loader[K, V, C]) Load(ctx context.Context, key K) *Thunk[V] {
@@ -65,7 +65,7 @@ func (l *loader[K, V, C]) Load(ctx context.Context, key K) *Thunk[V] {
         thunk.error(ctx, err)
         return thunk
     }
-    
+
     batches := <- l.batches
 
     cacheMap := <- l.cacheMap
@@ -73,7 +73,7 @@ func (l *loader[K, V, C]) Load(ctx context.Context, key K) *Thunk[V] {
 
     if err != nil {
         l.cacheMap <- cacheMap
-        l.batches <- batches 
+        l.batches <- batches
         thunk := NewThunk[V]()
         thunk.error(ctx, err)
         return thunk
@@ -81,7 +81,7 @@ func (l *loader[K, V, C]) Load(ctx context.Context, key K) *Thunk[V] {
 
     if cached != nil {
         l.cacheMap <- cacheMap
-        l.batches <- batches 
+        l.batches <- batches
         return cached
     }
 
@@ -89,7 +89,7 @@ func (l *loader[K, V, C]) Load(ctx context.Context, key K) *Thunk[V] {
     err = cacheMap.Set(ctx, cacheKey, thunk)
     if err != nil {
         l.cacheMap <- cacheMap
-        l.batches <- batches 
+        l.batches <- batches
         thunk.error(ctx, err)
         return thunk
     }
@@ -109,7 +109,7 @@ func (l *loader[K, V, C]) Load(ctx context.Context, key K) *Thunk[V] {
     bat.keys = append(bat.keys, key)
     bat.thunks = append(bat.thunks, thunk)
 
-    l.batches <- batches 
+    l.batches <- batches
 
     return thunk
 }

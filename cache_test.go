@@ -3,7 +3,7 @@ package dataloader
 import (
     . "github.com/onsi/ginkgo/v2"
     . "github.com/onsi/gomega"
-  
+
     "context"
 )
 
@@ -81,7 +81,7 @@ var _ = Describe("InMemoryCache", func () {
     It("get zero value if delete", func() {
         ctx := context.TODO()
         c1 := NewInMemoryCache[string, string]()
-        
+
         c1.Set(ctx, "foo", "bar")
         c1.Delete(ctx, "foo")
 
@@ -96,7 +96,7 @@ var _ = Describe("InMemoryCache", func () {
         c1.Set(ctx, "foo", "bar")
         c1.Set(ctx, "foobar", "baz")
         c1.Clear(ctx)
-        
+
         v1, err := c1.Get(ctx, "foo")
         Expect(v1).To(Equal(""))
         Expect(err).To(BeNil())

@@ -1,9 +1,9 @@
 package dataloader
 
-import (	
+import (
     . "github.com/onsi/ginkgo/v2"
     . "github.com/onsi/gomega"
-  
+
     "context"
     "reflect"
 )
@@ -22,20 +22,20 @@ var _ = Describe("Option", func () {
     It("can set schedule function", func() {
         scheduleFn := (func(ctx context.Context, callback func()) { callback() })
         dl := New[string, string, string](context.TODO(), func(ctx context.Context, keys []string) []Result[string] { return []Result[string]{} }, WithBatchScheduleFn[string, string, string](scheduleFn))
-        
+
         pointer1 := reflect.ValueOf(dl.(*loader[string, string, string]).batchScheduleFn).Pointer()
         pointer2 := reflect.ValueOf(scheduleFn).Pointer()
-        
+
         Expect(pointer1).To(Equal(pointer2))
     })
 
     It("can set cache key function", func() {
         cacheKeyFn := func(ctx context.Context, key string) (string, error) { return "", nil }
         dl := New[string, string, string](context.TODO(), func(ctx context.Context, keys []string) []Result[string] { return []Result[string]{} }, WithCacheKeyFn[string, string, string](cacheKeyFn))
-        
+
         pointer1 := reflect.ValueOf(dl.(*loader[string, string, string]).cacheKeyFn).Pointer()
         pointer2 := reflect.ValueOf(cacheKeyFn).Pointer()
-        
+
         Expect(pointer1).To(Equal(pointer2))
     })
 

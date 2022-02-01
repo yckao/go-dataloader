@@ -14,7 +14,7 @@ var _ = Describe("Thunk", func() {
     It("can wait value before it's set", func() {
         thunk := NewThunk[string]()
         expected := "foo"
-        
+
         ctx, cancel := context.WithTimeout(context.TODO(), 1 * time.Second)
 
         go func() {
@@ -35,7 +35,7 @@ var _ = Describe("Thunk", func() {
     It("can get value after it's set", func() {
         thunk := NewThunk[string]()
         expected := "foo"
-        
+
         ctx, cancel := context.WithTimeout(context.TODO(), 1 * time.Second)
 
         thunk.set(ctx, expected)
@@ -57,7 +57,7 @@ var _ = Describe("Thunk", func() {
     It("can get value multiple times", func() {
         thunk := NewThunk[string]()
         expected := "foo"
-        
+
         ctx, cancel := context.WithTimeout(context.TODO(), 1 * time.Second)
         wg := sync.WaitGroup{}
         wg.Add(2)
@@ -95,7 +95,7 @@ var _ = Describe("Thunk", func() {
     It("can get error multiple times", func() {
         thunk := NewThunk[string]()
         expected := errors.New("foo")
-        
+
         ctx, cancel := context.WithTimeout(context.TODO(), 1 * time.Second)
         wg := sync.WaitGroup{}
         wg.Add(2)
@@ -133,7 +133,7 @@ var _ = Describe("Thunk", func() {
     It("can wait error before it's set", func() {
         thunk := NewThunk[string]()
         expected := errors.New("bar")
-        
+
         ctx, cancel := context.WithTimeout(context.TODO(), 1 * time.Second)
 
         go func() {
@@ -154,7 +154,7 @@ var _ = Describe("Thunk", func() {
     It("can get error after it's set", func() {
         thunk := NewThunk[string]()
         expected := errors.New("bar")
-        
+
         ctx, cancel := context.WithTimeout(context.TODO(), 1 * time.Second)
 
         thunk.error(ctx, expected)
@@ -176,7 +176,7 @@ var _ = Describe("Thunk", func() {
     It("can override value with value", func() {
         thunk := NewThunk[string]()
         expected := "foo"
-        
+
         ctx, cancel := context.WithTimeout(context.TODO(), 1 * time.Second)
 
         thunk.set(ctx, "bar")
@@ -199,7 +199,7 @@ var _ = Describe("Thunk", func() {
     It("can override value with error", func() {
         thunk := NewThunk[string]()
         expected := errors.New("foo")
-        
+
         ctx, cancel := context.WithTimeout(context.TODO(), 1 * time.Second)
 
         thunk.set(ctx, "bar")
@@ -222,7 +222,7 @@ var _ = Describe("Thunk", func() {
     It("can override error with value", func() {
         thunk := NewThunk[string]()
         expected := "foo"
-        
+
         ctx, cancel := context.WithTimeout(context.TODO(), 1 * time.Second)
 
         thunk.error(ctx, errors.New("bar"))
@@ -245,7 +245,7 @@ var _ = Describe("Thunk", func() {
     It("can override error with error", func() {
         thunk := NewThunk[string]()
         expected := errors.New("foo")
-        
+
         ctx, cancel := context.WithTimeout(context.TODO(), 1 * time.Second)
 
         thunk.error(ctx, errors.New("bar"))
@@ -267,7 +267,7 @@ var _ = Describe("Thunk", func() {
 
     It("can cancel context", func() {
         thunk := NewThunk[string]()
-        
+
         ctx, cancel := context.WithTimeout(context.TODO(), 1 * time.Second)
 
         done := make(chan struct{})
