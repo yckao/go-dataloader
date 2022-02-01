@@ -18,6 +18,7 @@ A clean, safe, user-friendly implementation of [GraphQL's Dataloader](https://gi
 
 ## TODO
 
+- [ ] Examples
 - [ ] Docs
 - [ ] Support hooks for observability
 - [ ] Rewrite tests with mock (waiting for mockgen support 1.18)
