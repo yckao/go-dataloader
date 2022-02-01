@@ -30,7 +30,9 @@ type ExampleData struct {
     Message string
 }
 
-
+// batch load function is provided by user
+// incoming context is the context when create the loader
+// return value can set either Result.Value or Result.Error
 func batchLoadFn(ctx context.Context, keys []string) []dataloader.Result[*ExampleData] {
     result := make([]dataloader.Result[*ExampleData], len(keys))
     for index, key := range keys {
@@ -45,10 +47,20 @@ func batchLoadFn(ctx context.Context, keys []string) []dataloader.Result[*Exampl
 
 func main() {
     ctx := context.Background()
+
+    // context is the dataloader belong to
+    // first generics type is the type of key
+    // second generics type is the type of value
+    // third generics type is cache key
+    // user can provide custom cache function to map orignal key to other
     loader := dataloader.New[string, *ExampleData, string](ctx, batchLoadFn)
 
+    // load is a synchronize function return a promise like thunk
     thunk := loader.Load(ctx, "World")
+
+    // get will wait until thunk value or error is set
     val, err := thunk.Get(ctx)
+
     fmt.Printf("value: %v, err: %v\n", val, err)
 }
 ```
