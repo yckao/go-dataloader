@@ -1,6 +1,6 @@
 # go-dataloader
 
-A clean, safe, user-friendly implementation of [GraphQL's Dataloader](https://github.com/graphql/dataloader), written with generics in go (go1.18beta1).
+A clean, safe, user-friendly implementation of [GraphQL's Dataloader](https://github.com/graphql/dataloader), written with generics in go.
 
 ## Features
 
@@ -12,7 +12,7 @@ A clean, safe, user-friendly implementation of [GraphQL's Dataloader](https://gi
 
 ## Requirement
 
-- Only support go >= 1.18, currently in beta
+- go >= 1.18
 
 ## Getting Started
 
@@ -70,4 +70,4 @@ func main() {
 - [ ] Examples
 - [ ] Docs
 - [ ] Support hooks for observability
-- [ ] Rewrite tests with mock (waiting for mockgen support 1.18)
+- [ ] Rewrite tests with mock
