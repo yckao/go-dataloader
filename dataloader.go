@@ -28,7 +28,7 @@ func New[K interface{}, V interface{}, C comparable](ctx context.Context, batchL
 		ctx:             ctx,
 		batches:         make(chan []*batch[K, V], 1),
 		batchLoadFn:     batchLoadFn,
-		batchScheduleFn: NewTimeWindowScheduler(200 * time.Millisecond),
+		batchScheduleFn: NewTimeWindowScheduler(16 * time.Millisecond),
 		cacheKeyFn:      NewMirrorCacheKey[K, C](),
 		cacheMap:        make(chan CacheMap[C, *Thunk[V]], 1),
 		maxBatchSize:    100,
