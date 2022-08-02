@@ -149,7 +149,13 @@ func (l *loader[K, V, C]) LoadMany(ctx context.Context, keys []K) []*Thunk[V] {
 func (l *loader[K, V, C]) dispatch() {
 	ctx := l.ctx
 	batches := <-l.batches
+
+	if len(batches) == 0 {
+		l.batches <- batches
+		return
+	}
 	batch := batches[0]
+
 	l.batches <- batches[1:]
 
 	results := l.batchLoadFn(ctx, batch.keys)
