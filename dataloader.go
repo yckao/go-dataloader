@@ -11,6 +11,7 @@ type DataLoader[K interface{}, V interface{}, C comparable] interface {
 	Clear(context.Context, K) DataLoader[K, V, C]
 	ClearAll(ctx context.Context) DataLoader[K, V, C]
 	Prime(context.Context, K, V) DataLoader[K, V, C]
+	Dispatch()
 }
 
 type Result[V interface{}] struct {
@@ -144,6 +145,19 @@ func (l *loader[K, V, C]) LoadMany(ctx context.Context, keys []K) []*Thunk[V] {
 	}
 
 	return thunks
+}
+
+func (l *loader[K, V, C]) Dispatch() {
+	batches := <-l.batches
+	for _, batch := range batches {
+		select {
+		case <-batch.full:
+		case <-batch.dispatch:
+		default:
+			close(batch.dispatch)
+		}
+	}
+	l.batches <- batches
 }
 
 func (l *loader[K, V, C]) dispatch() {
