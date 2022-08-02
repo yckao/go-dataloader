@@ -8,12 +8,21 @@ import (
 	"time"
 )
 
+type MockBatch struct{}
+
+func (*MockBatch) Full() <-chan struct{} {
+	return make(<-chan struct{})
+}
+func (*MockBatch) Dispatch() <-chan struct{} {
+	return make(<-chan struct{})
+}
+
 var _ = Describe("NewTimeWindowScheduler", func() {
 	It("should run after specified duration", func() {
 		scheduler := NewTimeWindowScheduler(200 * time.Millisecond)
 		runned := false
 
-		go scheduler(context.TODO(), func() { runned = true })
+		go scheduler(context.TODO(), &MockBatch{}, func() { runned = true })
 		Expect(runned).To(BeFalse())
 
 		<-time.After(200 * time.Millisecond)
@@ -25,7 +34,7 @@ var _ = Describe("NewTimeWindowScheduler", func() {
 		runned := false
 
 		ctx, cancel := context.WithCancel(context.TODO())
-		go scheduler(ctx, func() { runned = true })
+		go scheduler(ctx, &MockBatch{}, func() { runned = true })
 		cancel()
 
 		<-time.After(200 * time.Millisecond)

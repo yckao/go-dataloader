@@ -20,7 +20,7 @@ var _ = Describe("Option", func() {
 	})
 
 	It("can set schedule function", func() {
-		scheduleFn := (func(ctx context.Context, callback func()) { callback() })
+		scheduleFn := (func(ctx context.Context, _ Batch, callback func()) { callback() })
 		dl := New[string, string, string](context.TODO(), func(ctx context.Context, keys []string) []Result[string] { return []Result[string]{} }, WithBatchScheduleFn[string, string, string](scheduleFn))
 
 		pointer1 := reflect.ValueOf(dl.(*loader[string, string, string]).batchScheduleFn).Pointer()

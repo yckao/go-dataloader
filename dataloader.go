@@ -19,7 +19,7 @@ type Result[V interface{}] struct {
 }
 
 type BatchLoadFn[K interface{}, V interface{}] func(context.Context, []K) []Result[V]
-type BatchScheduleFn func(ctx context.Context, callback func())
+type BatchScheduleFn func(ctx context.Context, batch Batch, callback func())
 type CacheKeyFn[K interface{}, C comparable] func(ctx context.Context, key K) (C, error)
 
 func New[K interface{}, V interface{}, C comparable](ctx context.Context, batchLoadFn BatchLoadFn[K, V], options ...option[K, V, C]) DataLoader[K, V, C] {
@@ -54,8 +54,23 @@ type loader[K interface{}, V interface{}, C comparable] struct {
 }
 
 type batch[K interface{}, V interface{}] struct {
-	keys   []K
-	thunks []*Thunk[V]
+	full     chan struct{}
+	dispatch chan struct{}
+	keys     []K
+	thunks   []*Thunk[V]
+}
+
+func (b *batch[K, V]) Full() <-chan struct{} {
+	return b.full
+}
+
+func (b *batch[K, V]) Dispatch() <-chan struct{} {
+	return b.dispatch
+}
+
+type Batch interface {
+	Full() <-chan struct{}
+	Dispatch() <-chan struct{}
 }
 
 func (l *loader[K, V, C]) Load(ctx context.Context, key K) *Thunk[V] {
@@ -97,17 +112,25 @@ func (l *loader[K, V, C]) Load(ctx context.Context, key K) *Thunk[V] {
 	l.cacheMap <- cacheMap
 
 	if len(batches) == 0 || len(batches[len(batches)-1].keys) >= l.maxBatchSize {
-		batches = append(batches, &batch[K, V]{
-			keys:   []K{},
-			thunks: []*Thunk[V]{},
-		})
+		b := &batch[K, V]{
+			full:     make(chan struct{}),
+			dispatch: make(chan struct{}),
+			keys:     []K{},
+			thunks:   []*Thunk[V]{},
+		}
 
-		go l.batchScheduleFn(l.ctx, l.dispatch)
+		batches = append(batches, b)
+
+		go l.batchScheduleFn(l.ctx, b, l.dispatch)
 	}
 
 	bat := batches[len(batches)-1]
 	bat.keys = append(bat.keys, key)
 	bat.thunks = append(bat.thunks, thunk)
+
+	if len(batches) != 0 && len(batches[len(batches)-1].keys) >= l.maxBatchSize {
+		close(batches[len(batches)-1].full)
+	}
 
 	l.batches <- batches
 
