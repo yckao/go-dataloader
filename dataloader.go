@@ -82,14 +82,11 @@ func (l *loader[K, V, C]) Load(ctx context.Context, key K) *Thunk[V] {
 		return thunk
 	}
 
-	batches := <-l.batches
-
 	cacheMap := <-l.cacheMap
 	cached, err := cacheMap.Get(ctx, cacheKey)
 
 	if err != nil {
 		l.cacheMap <- cacheMap
-		l.batches <- batches
 		thunk := NewThunk[V]()
 		thunk.error(ctx, err)
 		return thunk
@@ -97,7 +94,6 @@ func (l *loader[K, V, C]) Load(ctx context.Context, key K) *Thunk[V] {
 
 	if cached != nil {
 		l.cacheMap <- cacheMap
-		l.batches <- batches
 		return cached
 	}
 
@@ -105,12 +101,13 @@ func (l *loader[K, V, C]) Load(ctx context.Context, key K) *Thunk[V] {
 	err = cacheMap.Set(ctx, cacheKey, thunk)
 	if err != nil {
 		l.cacheMap <- cacheMap
-		l.batches <- batches
 		thunk.error(ctx, err)
 		return thunk
 	}
 
 	l.cacheMap <- cacheMap
+
+	batches := <-l.batches
 
 	if len(batches) == 0 || len(batches[len(batches)-1].keys) >= l.maxBatchSize {
 		b := &batch[K, V]{
