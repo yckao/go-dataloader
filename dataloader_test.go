@@ -435,6 +435,83 @@ var _ = Describe("DataLoader", func() {
 		Expect(err).To(BeNil())
 		Expect(loadCount).To(Equal(0))
 	})
+
+	It("can manually dispatch batch", func() {
+		ctx := context.TODO()
+		loadCount := 0
+		values := map[string]string{
+			"foo": "foobar",
+		}
+
+		batchLoadFn := func(ctx context.Context, keys []string) []Result[string] {
+			defer GinkgoRecover()
+
+			loadCount += 1
+			result := make([]Result[string], len(keys))
+			for index, key := range keys {
+				result[index] = Result[string]{
+					Value: values[key],
+				}
+			}
+
+			return result
+		}
+
+		loader := New[string, string, string](ctx, batchLoadFn, WithMaxBatchSize[string, string, string](200), WithBatchScheduleFn[string, string, string](NewTimeWindowScheduler(1*time.Second)))
+		start := time.Now()
+		thunk := loader.Load(ctx, "foo")
+		loader.Dispatch()
+		val, err := thunk.Get(ctx)
+		Expect(time.Now().Before(start.Add(500 * time.Millisecond))).To(BeTrue())
+		Expect(val).To(Equal(values["foo"]))
+		Expect(err).To(BeNil())
+		Expect(loadCount).To(Equal(1))
+	})
+
+	It("can early dispatch if full", func() {
+		ctx := context.TODO()
+		loadCount := 0
+		values := map[string]string{
+			"foo": "foobar",
+		}
+
+		batchLoadFn := func(ctx context.Context, keys []string) []Result[string] {
+			defer GinkgoRecover()
+
+			loadCount += 1
+			result := make([]Result[string], len(keys))
+			for index, key := range keys {
+				result[index] = Result[string]{
+					Value: values[key],
+				}
+			}
+
+			return result
+		}
+
+		loader := New[string, string, string](ctx, batchLoadFn, WithMaxBatchSize[string, string, string](0), WithBatchScheduleFn[string, string, string](NewTimeWindowScheduler(1*time.Second)))
+		start := time.Now()
+		thunk := loader.Load(ctx, "foo")
+		val, err := thunk.Get(ctx)
+		Expect(time.Now().Before(start.Add(500 * time.Millisecond))).To(BeTrue())
+		Expect(val).To(Equal(values["foo"]))
+		Expect(err).To(BeNil())
+		Expect(loadCount).To(Equal(1))
+	})
+
+	It("dispatch multiple time should not crash dataloader", func() {
+		ctx := context.TODO()
+		batchLoadFn := func(ctx context.Context, keys []string) []Result[string] {
+			defer GinkgoRecover()
+
+			result := make([]Result[string], len(keys))
+			return result
+		}
+
+		loader := New[string, string, string](ctx, batchLoadFn).(*loader[string, string, string])
+		loader.dispatch()
+		loader.dispatch()
+	})
 })
 
 func TestDataloader(t *testing.T) {
