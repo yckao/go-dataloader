@@ -25,34 +25,34 @@ func NewThunk[V interface{}]() *Thunk[V] {
 	return thunk
 }
 
-func (a *Thunk[V]) Get(ctx context.Context) (V, error) {
+func (t *Thunk[V]) Get(ctx context.Context) (V, error) {
 	select {
 	case <-ctx.Done():
 		return *new(V), ctx.Err()
-	case v := <-a.data:
-		a.data <- v
+	case v := <-t.data:
+		t.data <- v
 		return v.value, v.err
 	}
 }
 
-func (a *Thunk[V]) set(ctx context.Context, value V) (V, error) {
+func (t *Thunk[V]) set(ctx context.Context, value V) (V, error) {
 	select {
-	case <-a.data:
-	case <-a.pending:
+	case <-t.data:
+	case <-t.pending:
 	}
 
-	a.data <- &thunkData[V]{value: value}
+	t.data <- &thunkData[V]{value: value}
 
-	return a.Get(ctx)
+	return t.Get(ctx)
 }
 
-func (a *Thunk[V]) error(ctx context.Context, err error) (V, error) {
+func (t *Thunk[V]) error(ctx context.Context, err error) (V, error) {
 	select {
-	case <-a.data:
-	case <-a.pending:
+	case <-t.data:
+	case <-t.pending:
 	}
 
-	a.data <- &thunkData[V]{err: err}
+	t.data <- &thunkData[V]{err: err}
 
-	return a.Get(ctx)
+	return t.Get(ctx)
 }
