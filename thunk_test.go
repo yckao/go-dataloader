@@ -85,9 +85,8 @@ var _ = Describe("Thunk", func() {
 			cancel()
 		}()
 
-		select {
-		case <-ctx.Done():
-		}
+		<-ctx.Done()
+
 		Expect(ctx.Err()).To(Equal(context.Canceled))
 	})
 
@@ -123,9 +122,7 @@ var _ = Describe("Thunk", func() {
 			cancel()
 		}()
 
-		select {
-		case <-ctx.Done():
-		}
+		<-ctx.Done()
 		Expect(ctx.Err()).To(Equal(context.Canceled))
 	})
 

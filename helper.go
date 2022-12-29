@@ -26,8 +26,8 @@ func NewTimeWindowScheduler(t time.Duration) BatchScheduleFn {
 }
 
 var (
-	ErrUncomparableKey  = errors.New("cannot use uncomparable key in mirror cache key function.")
-	ErrUnconvertibleKey = errors.New("cannot use convert key to cache key function.")
+	ErrUncomparableKey  = errors.New("cannot use uncomparable key in mirror cache key function")
+	ErrUnconvertibleKey = errors.New("cannot use convert key to cache key function")
 )
 
 func NewMirrorCacheKey[K interface{}, C comparable]() CacheKeyFn[K, C] {
@@ -35,11 +35,11 @@ func NewMirrorCacheKey[K interface{}, C comparable]() CacheKeyFn[K, C] {
 		kt := reflect.TypeOf(key)
 		ct := reflect.TypeOf(*new(C))
 		kv := reflect.ValueOf(key)
-		if kt.Comparable() == false {
+		if !kt.Comparable() {
 			return *new(C), ErrUncomparableKey
 		}
 
-		if kt.ConvertibleTo(ct) == false {
+		if !kt.ConvertibleTo(ct) {
 			return *new(C), ErrUnconvertibleKey
 		}
 
