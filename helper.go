@@ -5,6 +5,7 @@ import (
 	"errors"
 	"reflect"
 	"time"
+	"unsafe"
 )
 
 func NewTimeWindowScheduler(t time.Duration) BatchScheduleFn {
@@ -30,18 +31,31 @@ var (
 )
 
 func NewMirrorCacheKey[K interface{}, C comparable]() CacheKeyFn[K, C] {
+	kt := reflect.TypeOf(*new(K))
+	ct := reflect.TypeOf(*new(C))
+	emptyC := *new(C)
+
+	if !kt.Comparable() {
+		return func(ctx context.Context, key K) (C, error) {
+			return emptyC, ErrUncomparableKey
+		}
+	}
+
+	if !kt.ConvertibleTo(ct) {
+		return func(ctx context.Context, key K) (C, error) {
+			return emptyC, ErrUnconvertibleKey
+		}
+	}
+
+	if kt == ct {
+		return func(ctx context.Context, key K) (C, error) {
+			return *(*C)(unsafe.Pointer(&key)), nil
+		}
+	}
+
 	return func(ctx context.Context, key K) (C, error) {
-		kt := reflect.TypeOf(key)
-		ct := reflect.TypeOf(*new(C))
 		kv := reflect.ValueOf(key)
-		if !kt.Comparable() {
-			return *new(C), ErrUncomparableKey
-		}
-
-		if !kt.ConvertibleTo(ct) {
-			return *new(C), ErrUnconvertibleKey
-		}
-
 		return kv.Convert(ct).Interface().(C), nil
 	}
+
 }
