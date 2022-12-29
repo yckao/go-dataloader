@@ -3,6 +3,7 @@ package dataloader
 import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+	. "github.com/onsi/gomega/gleak"
 
 	"context"
 	"fmt"
@@ -52,6 +53,10 @@ func (c *ErrorCache[C, V]) Clear(ctx context.Context) error {
 }
 
 var _ = Describe("DataLoader", func() {
+	AfterEach(func() {
+		Eventually(Goroutines).ShouldNot(HaveLeaked())
+	})
+
 	It("can batch load request", func() {
 		ctx := context.TODO()
 		loadCount := 0
