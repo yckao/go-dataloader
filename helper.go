@@ -10,14 +10,13 @@ import (
 func NewTimeWindowScheduler(t time.Duration) BatchScheduleFn {
 	return func(ctx context.Context, batch Batch, callback func()) {
 		timer := time.NewTimer(t)
+		defer timer.Stop()
 		select {
 		case <-ctx.Done():
 			return
 		case <-batch.Dispatch():
-			timer.Stop()
 			callback()
 		case <-batch.Full():
-			timer.Stop()
 			callback()
 		case <-timer.C:
 			callback()
