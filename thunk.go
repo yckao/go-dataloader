@@ -15,14 +15,14 @@ type thunkData[V interface{}] struct {
 }
 
 func NewThunk[V interface{}]() *Thunk[V] {
-	Thunk := &Thunk[V]{
+	thunk := &Thunk[V]{
 		pending: make(chan bool, 1),
 		data:    make(chan *thunkData[V], 1),
 	}
 
-	Thunk.pending <- true
+	thunk.pending <- true
 
-	return Thunk
+	return thunk
 }
 
 func (a *Thunk[V]) Get(ctx context.Context) (V, error) {
