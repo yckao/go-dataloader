@@ -7,7 +7,7 @@ A clean, safe, user-friendly implementation of [GraphQL's Dataloader](https://gi
 - written in generics with strong type
 - nearly same interface with original nodejs version dataloader
 - promise like thunk design, simply call `val, err := loader.Load(ctx, id).Get(ctx)`
-- customizable cache, easily wrap lru or redis.
+- customizable cache, easily wrap lru.
 - customizable scheduler, can manual dispatch, or use time window (default)
 
 ## Requirement
