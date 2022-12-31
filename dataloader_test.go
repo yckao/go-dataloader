@@ -12,12 +12,12 @@ import (
 	"time"
 )
 
-type ErrorCache[C comparable, V interface{}] struct {
+type ErrorCache[C comparable, V any] struct {
 	err   error
 	errOn string
 }
 
-func NewErrorCache[C comparable, V interface{}](err error, errOn string) *ErrorCache[C, V] {
+func NewErrorCache[C comparable, V any](err error, errOn string) *ErrorCache[C, V] {
 	return &ErrorCache[C, V]{
 		err:   err,
 		errOn: errOn,

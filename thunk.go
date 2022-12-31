@@ -4,17 +4,17 @@ import (
 	"context"
 )
 
-type Thunk[V interface{}] struct {
+type Thunk[V any] struct {
 	pending chan bool
 	data    chan *thunkData[V]
 }
 
-type thunkData[V interface{}] struct {
+type thunkData[V any] struct {
 	value V
 	err   error
 }
 
-func NewThunk[V interface{}]() *Thunk[V] {
+func NewThunk[V any]() *Thunk[V] {
 	thunk := &Thunk[V]{
 		pending: make(chan bool, 1),
 		data:    make(chan *thunkData[V], 1),

@@ -30,7 +30,7 @@ var (
 	ErrUnconvertibleKey = errors.New("cannot use convert key to cache key function")
 )
 
-func NewMirrorCacheKey[K interface{}, C comparable]() CacheKeyFn[K, C] {
+func NewMirrorCacheKey[K any, C comparable]() CacheKeyFn[K, C] {
 	kt := reflect.TypeOf(*new(K))
 	ct := reflect.TypeOf(*new(C))
 	emptyC := *new(C)
