@@ -4,7 +4,9 @@ type option[K any, V any, C comparable] func(*loader[K, V, C])
 
 func WithBatch[K any, V any, C comparable](useBatch bool) option[K, V, C] {
 	return func(l *loader[K, V, C]) {
-		l.maxBatchSize = 1
+		if !useBatch {
+			l.maxBatchSize = 1
+		}
 	}
 }
 
