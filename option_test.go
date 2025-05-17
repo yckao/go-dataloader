@@ -14,6 +14,11 @@ var _ = Describe("Option", func() {
 		Expect(dl.(*loader[string, string, string]).maxBatchSize).To(Equal(1))
 	})
 
+	It("can enable batch without changing max batch size", func() {
+		dl := New[string, string, string](context.TODO(), func(ctx context.Context, keys []string) []Result[string] { return []Result[string]{} }, WithBatch[string, string, string](true))
+		Expect(dl.(*loader[string, string, string]).maxBatchSize).To(Equal(100))
+	})
+
 	It("can set max batch size", func() {
 		dl := New[string, string, string](context.TODO(), func(ctx context.Context, keys []string) []Result[string] { return []Result[string]{} }, WithMaxBatchSize[string, string, string](10))
 		Expect(dl.(*loader[string, string, string]).maxBatchSize).To(Equal(10))
