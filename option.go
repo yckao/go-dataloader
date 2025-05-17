@@ -34,3 +34,9 @@ func WithCacheMap[K any, V any, C comparable](cacheMap CacheMap[C, *Thunk[V]]) o
 		l.cacheMap <- cacheMap
 	}
 }
+
+func WithHook[K any, V any, C comparable](hook Hook[K, V]) option[K, V, C] {
+	return func(l *loader[K, V, C]) {
+		l.hook = hook
+	}
+}

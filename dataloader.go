@@ -29,6 +29,7 @@ func New[K any, V any, C comparable](ctx context.Context, batchLoadFn BatchLoadF
 		batches:         make(chan []*batch[K, V], 1),
 		batchLoadFn:     batchLoadFn,
 		batchScheduleFn: NewTimeWindowScheduler(16 * time.Millisecond),
+		hook:            nil,
 		cacheKeyFn:      NewMirrorCacheKey[K, C](),
 		cacheMap:        make(chan CacheMap[C, *Thunk[V]], 1),
 		maxBatchSize:    100,
@@ -49,6 +50,7 @@ type loader[K any, V any, C comparable] struct {
 	batches         chan []*batch[K, V]
 	batchLoadFn     BatchLoadFn[K, V]
 	batchScheduleFn BatchScheduleFn
+	hook            Hook[K, V]
 	cacheKeyFn      CacheKeyFn[K, C]
 	cacheMap        chan CacheMap[C, *Thunk[V]]
 	maxBatchSize    int
@@ -169,7 +171,13 @@ func (l *loader[K, V, C]) dispatch() {
 
 	l.batches <- batches[1:]
 
+	if l.hook != nil {
+		l.hook.BeforeBatch(ctx, batch.keys)
+	}
 	results := l.batchLoadFn(ctx, batch.keys)
+	if l.hook != nil {
+		l.hook.AfterBatch(ctx, batch.keys, results)
+	}
 
 	for index, res := range results {
 		if res.Error != nil {
