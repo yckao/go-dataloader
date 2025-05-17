@@ -65,9 +65,34 @@ func main() {
 }
 ```
 
+## Hooks
+
+The loader can emit observability events around each batch. Implement the
+`Hook` interface and pass it to `New` via `WithHook` to be notified when a batch
+is executed.
+
+```go
+type loggingHook struct{}
+
+func (loggingHook) BeforeBatch(ctx context.Context, keys []string) {
+    log.Printf("loading %v", keys)
+}
+
+func (loggingHook) AfterBatch(ctx context.Context, keys []string, results []dataloader.Result[*ExampleData]) {
+    log.Printf("loaded %v entries", len(results))
+}
+
+func main() {
+    ctx := context.Background()
+    loader := dataloader.New[string, *ExampleData, string](ctx, batchLoadFn,
+        dataloader.WithHook[string, *ExampleData, string](loggingHook{}),
+    )
+    // ...
+}
+```
+
 ## TODO
 
 - [ ] Examples
 - [ ] Docs
-- [ ] Support hooks for observability
 - [ ] Rewrite tests with mock

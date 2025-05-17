@@ -12,6 +12,19 @@ import (
 	"time"
 )
 
+type recordHook struct {
+	before [][]string
+	after  [][]string
+}
+
+func (h *recordHook) BeforeBatch(_ context.Context, keys []string) {
+	h.before = append(h.before, append([]string(nil), keys...))
+}
+
+func (h *recordHook) AfterBatch(_ context.Context, keys []string, _ []Result[string]) {
+	h.after = append(h.after, append([]string(nil), keys...))
+}
+
 type ErrorCache[C comparable, V any] struct {
 	err   error
 	errOn string
@@ -516,6 +529,33 @@ var _ = Describe("DataLoader", func() {
 		loader := New[string, string, string](ctx, batchLoadFn).(*loader[string, string, string])
 		loader.dispatch()
 		loader.dispatch()
+	})
+
+	It("invoke hooks around batch execution", func() {
+		ctx := context.TODO()
+		hook := &recordHook{}
+
+		batchLoadFn := func(ctx context.Context, keys []string) []Result[string] {
+			defer GinkgoRecover()
+			result := make([]Result[string], len(keys))
+			for index := range keys {
+				result[index] = Result[string]{Value: "bar"}
+			}
+			return result
+		}
+
+		loader := New[string, string, string](ctx, batchLoadFn,
+			WithMaxBatchSize[string, string, string](200),
+			WithBatchScheduleFn[string, string, string](NewTimeWindowScheduler(1*time.Second)),
+			WithHook[string, string, string](hook),
+		)
+
+		thunk := loader.Load(ctx, "foo")
+		loader.Dispatch()
+		_, err := thunk.Get(ctx)
+		Expect(err).To(BeNil())
+		Expect(hook.before).To(HaveLen(1))
+		Expect(hook.after).To(HaveLen(1))
 	})
 })
 
